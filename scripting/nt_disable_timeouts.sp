@@ -5,7 +5,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.3"
+#define PLUGIN_VERSION "0.1.3.1"
 
 #define DEBUG 0
 #define MAX_ROUNDS 99
@@ -81,8 +81,15 @@ public OnAllPluginsLoaded()
 	}
 	ghostcapVersion_Numeric[stringpos] = 0; // string terminator
 	
-	if (StringToInt(ghostcapVersion_Numeric) < 131)
-		SetFailState("This plugin requires Soft as HELL's Ghost cap plugin to be running version 1.3.1 or higher.");
+	if (
+			(strlen(ghostcapVersion_Numeric) >= 3 && StringToInt(ghostcapVersion_Numeric) < 131)	|| // 3+ digit version numbers
+			(strlen(ghostcapVersion_Numeric) == 2 && StringToInt(ghostcapVersion_Numeric) < 14)		|| // 2 digit version numbers
+			(strlen(ghostcapVersion_Numeric) == 1 && StringToInt(ghostcapVersion_Numeric) < 2)		|| // 1 digit version numbers
+			(strlen(ghostcapVersion_Numeric) < 1) // version string has no numbers, treat as error
+		)
+		{
+			SetFailState("This plugin requires Soft as HELL's Ghost cap plugin to be running version 1.3.1 or higher.");
+		}
 }
 
 public OnConfigsExecuted()
