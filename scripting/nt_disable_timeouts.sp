@@ -5,7 +5,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.1"
+#define PLUGIN_VERSION "0.1.2"
 
 #define DEBUG 0
 #define MAX_ROUNDS 99
@@ -57,10 +57,6 @@ public OnPluginStart()
 	HookConVarChange(g_hDesiredScoreLimit, Event_DesiredScoreLimit);
 	
 	CreateConVar("sm_timeouts_version", PLUGIN_VERSION, "NT Disable Timeouts plugin version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-	
-	// In case plugin gets loaded mid-game, try to guess current round.
-	// Ties aren't considered, but we just want to know that game is already happening, as that affects the first Event_RoundStart call.
-	g_roundNumber = GetTeamScore(TEAM_JINRAI) + GetTeamScore(TEAM_NSF);
 }
 
 public OnAllPluginsLoaded()
@@ -76,9 +72,9 @@ public OnConfigsExecuted()
 	SetConVarInt( g_hNeoScoreLimit, GetConVarInt(g_hDesiredScoreLimit) );
 }
 
-public OnMapEnd()
+public OnMapStart()
 {
-	g_roundNumber = 0;
+	g_roundNumber = GetTeamScore(TEAM_JINRAI) + GetTeamScore(TEAM_NSF);
 }
 
 public OnClientDisconnect(client)
@@ -168,10 +164,8 @@ void CancelRound()
 }
 
 public Action:Timer_CheckWinCondition(Handle:timer)
-{
-	new scoreLimit = GetConVarInt(g_hDesiredScoreLimit);
-	
-	if (GetTeamScore(TEAM_JINRAI) >= scoreLimit)
+{	
+	if ( GetTeamScore(TEAM_JINRAI) >= GetConVarInt(g_hDesiredScoreLimit) )
 	{
 		PrintToChatAll( "%s Jinrai wins %i - %i", g_tag, g_teamScore[TEAM_JINRAI][g_roundNumber], g_teamScore[TEAM_NSF][g_roundNumber] );
 		
@@ -182,7 +176,7 @@ public Action:Timer_CheckWinCondition(Handle:timer)
 		CreateTimer( GetConVarFloat(g_hRoundEndTime), Timer_MapChange );
 	}
 	
-	else if (GetTeamScore(TEAM_NSF) >= scoreLimit)
+	else if ( GetTeamScore(TEAM_NSF) >= GetConVarInt(g_hDesiredScoreLimit) )
 	{
 		PrintToChatAll( "%s NSF wins %i - %i", g_tag, g_teamScore[TEAM_NSF][g_roundNumber], g_teamScore[TEAM_JINRAI][g_roundNumber] );
 		
@@ -196,14 +190,16 @@ public Action:Timer_CheckWinCondition(Handle:timer)
 	if (GetConVarInt(g_hNeoScoreLimit) == MAX_ROUNDS)
 		return Plugin_Handled;
 	
+	PrintToServer("# CHECK");
+	
 	// We've finished voting for nextmap. Now increase the native roundcount to max amount so it doesn't get in the way of our mapchange method.
 	if (
 			(GetConVarInt(g_hDesiredScoreLimit) <= 2 && g_roundNumber > 1) ||
 			
 			(
 				(
-					GetTeamScore(TEAM_JINRAI) >= scoreLimit - GetConVarInt(g_hVoteMap_RoundsRemaining) ||
-					GetTeamScore(TEAM_NSF) >= scoreLimit - GetConVarInt(g_hVoteMap_RoundsRemaining)
+					GetTeamScore(TEAM_JINRAI) >= GetConVarInt(g_hDesiredScoreLimit) - GetConVarInt(g_hVoteMap_RoundsRemaining) ||
+					GetTeamScore(TEAM_NSF) >= GetConVarInt(g_hDesiredScoreLimit) - GetConVarInt(g_hVoteMap_RoundsRemaining)
 				)
 				&&
 				(
@@ -212,7 +208,12 @@ public Action:Timer_CheckWinCondition(Handle:timer)
 			)
 		)
 		{
+			PrintToServer("#YES");
 			SetConVarInt(g_hNeoScoreLimit, MAX_ROUNDS);
+		}
+		else
+		{
+			PrintToServer("#NO");
 		}
 	
 	return Plugin_Handled;
