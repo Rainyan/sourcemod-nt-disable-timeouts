@@ -5,7 +5,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.2"
+#define PLUGIN_VERSION "0.1.3"
 
 #define DEBUG 0
 #define MAX_ROUNDS 99
@@ -15,7 +15,6 @@ new Handle:g_hNeoRestartThis;
 new Handle:g_hNeoScoreLimit;
 new Handle:g_hRoundEndTime;
 new Handle:g_hRoundTime;
-new Handle:g_hGhostcapVersion;
 new Handle:g_hNextMap;
 new Handle:g_hVoteMap_RoundsRemaining;
 
@@ -61,9 +60,29 @@ public OnPluginStart()
 
 public OnAllPluginsLoaded()
 {
-	g_hGhostcapVersion = FindConVar("sm_ntghostcapevent_version");
+	new Handle:g_hGhostcapVersion = FindConVar("sm_ntghostcapevent_version");
+	
+	// Look for ghost cap plugin's version variable
 	if (g_hGhostcapVersion == null)
-		SetFailState("This plugin requires Soft as HELL's Ghost cap plugin, version 1.3.1 or newer: %s", g_ghostcapUrl);
+		SetFailState("This plugin requires Soft as HELL's Ghost cap plugin: %s", g_ghostcapUrl);
+	
+	// Get the ghost cap plugin version
+	decl String:ghostcapVersion[16];
+	GetConVarString( g_hGhostcapVersion, ghostcapVersion, sizeof(ghostcapVersion) );
+	CloseHandle(g_hGhostcapVersion);
+	
+	decl String:ghostcapVersion_Numeric[16];
+	new stringpos;
+	
+	for (new i = 0; i < strlen(ghostcapVersion); i++)
+	{
+		if ( IsCharNumeric(ghostcapVersion[i]) )
+			ghostcapVersion_Numeric[stringpos++] = ghostcapVersion[i];
+	}
+	ghostcapVersion_Numeric[stringpos] = 0; // string terminator
+	
+	if (StringToInt(ghostcapVersion_Numeric) < 131)
+		SetFailState("This plugin requires Soft as HELL's Ghost cap plugin to be running version 1.3.1 or higher.");
 }
 
 public OnConfigsExecuted()
