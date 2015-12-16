@@ -5,7 +5,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1"
+#define PLUGIN_VERSION "0.1.1"
 
 #define DEBUG 0
 #define MAX_ROUNDS 99
@@ -193,7 +193,10 @@ public Action:Timer_CheckWinCondition(Handle:timer)
 		CreateTimer( GetConVarFloat(g_hRoundEndTime), Timer_MapChange );
 	}
 	
-	// We've finished voting for nextmap. Now increase the native roundcount to max amount so it doesn't get in the way of our mapchange method.		
+	if (GetConVarInt(g_hNeoScoreLimit) == MAX_ROUNDS)
+		return Plugin_Handled;
+	
+	// We've finished voting for nextmap. Now increase the native roundcount to max amount so it doesn't get in the way of our mapchange method.
 	if (
 			(GetConVarInt(g_hDesiredScoreLimit) <= 2 && g_roundNumber > 1) ||
 			
@@ -209,8 +212,10 @@ public Action:Timer_CheckWinCondition(Handle:timer)
 			)
 		)
 		{
-			SetConVarInt(g_hNeoScoreLimit, 99);
+			SetConVarInt(g_hNeoScoreLimit, MAX_ROUNDS);
 		}
+	
+	return Plugin_Handled;
 }
 
 public Event_NeoRestartThis(Handle:cvar, const String:oldVal[], const String:newVal[])
