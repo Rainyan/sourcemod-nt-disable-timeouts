@@ -5,7 +5,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.3.1"
+#define PLUGIN_VERSION "0.1.3.2"
 
 #define DEBUG 0
 #define MAX_ROUNDS 99
@@ -159,24 +159,28 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 	{
 		new victim = GetClientOfUserId(GetEventInt(event, "userid"));
 		playerSurvivedRound[victim] = false;
-#if DEBUG
-		PrintToChatAll("DED");
-#endif	
 	}
-#if DEBUG
-	else
-	{
-		PrintToChatAll("DED, but not in time");
-	}
-	
-	PrintToServer("Death time: %f. round max length: %f.", deathTime, roundMaxLength);
-#endif
 }
 
 public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	
+	if ( !Client_IsValid(client) || !IsClientInGame(client) )
+		return Plugin_Handled;
+	
+	new team = GetClientTeam(client);
+	if (team != TEAM_JINRAI && team != TEAM_NSF)
+		return Plugin_Handled;
+	
+	// Round started already, client cannot spawn as a living player
+	new Float:currentTime = GetGameTime();
+	if (currentTime - g_fRoundTime > 15)
+		return Plugin_Handled;
+	
 	playerSurvivedRound[client] = true;
+	
+	return Plugin_Handled;
 }
 
 void CancelRound()
