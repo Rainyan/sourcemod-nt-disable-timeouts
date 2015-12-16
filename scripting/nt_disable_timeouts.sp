@@ -190,8 +190,6 @@ public Action:Timer_CheckWinCondition(Handle:timer)
 	if (GetConVarInt(g_hNeoScoreLimit) == MAX_ROUNDS)
 		return Plugin_Handled;
 	
-	PrintToServer("# CHECK");
-	
 	// We've finished voting for nextmap. Now increase the native roundcount to max amount so it doesn't get in the way of our mapchange method.
 	if (
 			(GetConVarInt(g_hDesiredScoreLimit) <= 2 && g_roundNumber > 1) ||
@@ -208,12 +206,7 @@ public Action:Timer_CheckWinCondition(Handle:timer)
 			)
 		)
 		{
-			PrintToServer("#YES");
 			SetConVarInt(g_hNeoScoreLimit, MAX_ROUNDS);
-		}
-		else
-		{
-			PrintToServer("#NO");
 		}
 	
 	return Plugin_Handled;
