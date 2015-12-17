@@ -1,13 +1,11 @@
 #pragma semicolon 1
 
 #include <sourcemod>
-#include "nt_ghostcap_natives" // need at least version 1.3.1, see url at variable g_ghostcapUrl below
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.3.2"
+#define PLUGIN_VERSION "0.1.4"
 
-#define DEBUG 0
 #define MAX_ROUNDS 99
 
 new Handle:g_hDesiredScoreLimit;
@@ -19,7 +17,7 @@ new Handle:g_hNextMap;
 new Handle:g_hVoteMap_RoundsRemaining;
 
 new g_roundNumber;
-new g_ghostCapper;
+new g_ghostCappingTeam;
 new g_teamScore[4][MAX_ROUNDS]; // unassigned, spec, jinrai, nsf
 
 new bool:playerSurvivedRound[MAXPLAYERS+1];
@@ -27,7 +25,6 @@ new bool:playerSurvivedRound[MAXPLAYERS+1];
 new Float:g_fRoundTime;
 
 new String:g_tag[] = "[TIMEOUT]";
-new String:g_ghostcapUrl[] = "https://github.com/softashell/nt-sourcemod-plugins/blob/master/nt_ghostcap.sp";
 
 public Plugin:myinfo = {
 	name			= "NT Disable Timeouts",
@@ -61,6 +58,7 @@ public OnPluginStart()
 public OnAllPluginsLoaded()
 {
 	new Handle:g_hGhostcapVersion = FindConVar("sm_ntghostcapevent_version");
+	new String:g_ghostcapUrl[] = "https://github.com/softashell/nt-sourcemod-plugins/blob/master/scripting/nt_ghostcap.sp";
 	
 	// Look for ghost cap plugin's version variable
 	if (g_hGhostcapVersion == null)
@@ -82,13 +80,13 @@ public OnAllPluginsLoaded()
 	ghostcapVersion_Numeric[stringpos] = 0; // string terminator
 	
 	if (
-			(strlen(ghostcapVersion_Numeric) >= 3 && StringToInt(ghostcapVersion_Numeric) < 131)	|| // 3+ digit version numbers
-			(strlen(ghostcapVersion_Numeric) == 2 && StringToInt(ghostcapVersion_Numeric) < 14)		|| // 2 digit version numbers
+			(strlen(ghostcapVersion_Numeric) >= 3 && StringToInt(ghostcapVersion_Numeric) < 151)	|| // 3+ digit version numbers
+			(strlen(ghostcapVersion_Numeric) == 2 && StringToInt(ghostcapVersion_Numeric) < 16)		|| // 2 digit version numbers
 			(strlen(ghostcapVersion_Numeric) == 1 && StringToInt(ghostcapVersion_Numeric) < 2)		|| // 1 digit version numbers
 			(strlen(ghostcapVersion_Numeric) < 1) // version string has no numbers, treat as error
 		)
 		{
-			SetFailState("This plugin requires Soft as HELL's Ghost cap plugin to be running version 1.3.1 or higher.");
+			SetFailState("This plugin requires Soft as HELL's Ghost cap plugin to be running version 1.5.1 or higher: %s", g_ghostcapUrl);
 		}
 }
 
@@ -108,6 +106,18 @@ public OnClientDisconnect(client)
 	playerSurvivedRound[client] = false; // Snake? SNAAKE
 }
 
+public OnGhostCapture(client)
+{
+	if ( !Client_IsValid(client) )
+		return;
+	
+	new team = GetClientTeam(client);
+	if (team != TEAM_JINRAI && team != TEAM_NSF)
+		return;
+	
+	g_ghostCappingTeam = team;
+}
+
 public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	g_fRoundTime = GetGameTime();
@@ -118,17 +128,19 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 	g_teamScore[TEAM_JINRAI][g_roundNumber] = GetTeamScore(TEAM_JINRAI);
 	g_teamScore[TEAM_NSF][g_roundNumber] = GetTeamScore(TEAM_NSF);
 	
+	g_ghostCappingTeam = TEAM_NONE;
+	
 	// First round, we don't need to check for timeouts. Stop here.
 	if (g_roundNumber == 1)
 		return Plugin_Continue;
 	
-	g_ghostCapper = Ghostcap_CapInfo();
-	
-	if (g_ghostCapper == TEAM_JINRAI || g_ghostCapper == TEAM_NSF)
+	// There was a ghost capture. Stop here.
+	if (g_ghostCappingTeam == TEAM_JINRAI || g_ghostCappingTeam == TEAM_NSF)
 		return Plugin_Continue;
 	
 	new survivors[4]; // unassigned, spec, jinrai, nsf
 	
+	// Check survivor count on both teams
 	for (new i = 1; i <= MaxClients; i++)
 	{
 		if ( !Client_IsValid(i) )
@@ -144,6 +156,7 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 		survivors[team]++;
 	}
 	
+	// Both teams had players remaining, cancel previous round's team score
 	if (survivors[TEAM_JINRAI] > 0 && survivors[TEAM_NSF] > 0)
 		CancelRound();
 	
@@ -175,7 +188,7 @@ public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroa
 	
 	// Round started already, client cannot spawn as a living player
 	new Float:currentTime = GetGameTime();
-	if (currentTime - g_fRoundTime > 15)
+	if (currentTime - g_fRoundTime > 15 + 1) // Freezetime is 15 secs, but the timer isn't 100% accurate. Added one second for safety.
 		return Plugin_Handled;
 	
 	playerSurvivedRound[client] = true;
