@@ -208,6 +208,12 @@ void CancelRound()
 	
 	new lastRound = g_roundNumber - 1;
 	
+	if (lastRound < 1)
+	{
+		LogError("Tried to revert to team scores from round %i. Reverted to round 1 scores instead.", lastRound);
+		lastRound = 1;
+	}
+	
 	SetTeamScore(TEAM_JINRAI, g_teamScore[TEAM_JINRAI][lastRound]);
 	SetTeamScore(TEAM_NSF, g_teamScore[TEAM_NSF][lastRound]);
 }
