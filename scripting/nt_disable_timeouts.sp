@@ -4,7 +4,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.4"
+#define PLUGIN_VERSION "0.1.4.1"
 
 #define MAX_ROUNDS 99
 
@@ -109,11 +109,17 @@ public OnClientDisconnect(client)
 public OnGhostCapture(client)
 {
 	if ( !Client_IsValid(client) )
+	{
+		LogError("Returned invalid client %i", client);
 		return;
+	}
 	
 	new team = GetClientTeam(client);
 	if (team != TEAM_JINRAI && team != TEAM_NSF)
+	{
+		LogError("Returned client %i does not belong to team Jinrai or NSF, returned team id %i", client, team);
 		return;
+	}
 	
 	g_ghostCappingTeam = team;
 }
