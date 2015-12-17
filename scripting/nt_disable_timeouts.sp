@@ -156,9 +156,15 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 		survivors[team]++;
 	}
 	
-	// Both teams had players remaining, cancel previous round's team score
+	// Both teams had players remaining after the timeout
 	if (survivors[TEAM_JINRAI] > 0 && survivors[TEAM_NSF] > 0)
-		CancelRound();
+	{
+		// Teams didn't reach a traditional NT tie by numbers
+		if (survivors[TEAM_JINRAI] != survivors[TEAM_NSF])
+		{
+			CancelRound(); // Cancel the team's round point gained
+		}
+	}
 	
 	return Plugin_Handled;
 }
