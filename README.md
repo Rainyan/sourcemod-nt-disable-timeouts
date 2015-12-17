@@ -6,7 +6,6 @@ This plugin is not compatible with the <a target="_blank" href="https://github.c
 Compile dependencies:
   - <a target="_blank" href="https://github.com/bcserv/smlib/">SMLIB</a>
   - <a target="_blank" href="https://github.com/softashell/sourcemod-nt-include">SourceMod NT include</a>
-  - <a target="_blank" href="https://github.com/softashell/nt-sourcemod-plugins">Ghostcap event natives</a>
 
 Required server plugins:
-  - <a target="_blank" href="https://github.com/softashell/nt-sourcemod-plugins">Ghostcap event</a>, version 1.3.1 or newer
+  - <a target="_blank" href="https://github.com/softashell/nt-sourcemod-plugins">Ghostcap event</a>, version 1.5.1 or newer
