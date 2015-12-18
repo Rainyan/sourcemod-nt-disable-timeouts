@@ -4,7 +4,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.4.1"
+#define PLUGIN_VERSION "0.1.4.2"
 
 #define MAX_ROUNDS 99
 
@@ -128,13 +128,12 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 {
 	g_fRoundTime = GetGameTime();
 	CreateTimer(1.0, Timer_CheckWinCondition);
+	CreateTimer(5.0, Timer_ResetGhostCapper);
 	
 	g_roundNumber++;
 	
 	g_teamScore[TEAM_JINRAI][g_roundNumber] = GetTeamScore(TEAM_JINRAI);
 	g_teamScore[TEAM_NSF][g_roundNumber] = GetTeamScore(TEAM_NSF);
-	
-	g_ghostCappingTeam = TEAM_NONE;
 	
 	// First round, we don't need to check for timeouts. Stop here.
 	if (g_roundNumber == 1)
@@ -206,6 +205,11 @@ public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroa
 	playerSurvivedRound[client] = true;
 	
 	return Plugin_Handled;
+}
+
+public Action:Timer_ResetGhostCapper(Handle:timer)
+{
+	g_ghostCappingTeam = TEAM_NONE; // Reset ghost cap var
 }
 
 void CancelRound()
