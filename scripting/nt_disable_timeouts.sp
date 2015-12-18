@@ -282,7 +282,10 @@ public Event_NeoRestartThis(Handle:cvar, const String:oldVal[], const String:new
 	new isRestarting = StringToInt(newVal);
 	
 	if (isRestarting)
+	{
+		g_ghostCappingTeam = TEAM_NONE;
 		g_roundNumber = 0;
+	}
 }
 
 public Event_DesiredScoreLimit(Handle:cvar, const String:oldVal[], const String:newVal[])
