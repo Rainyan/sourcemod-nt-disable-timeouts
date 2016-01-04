@@ -4,7 +4,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.4.3"
+#define PLUGIN_VERSION "0.1.4.4"
 
 #define MAX_ROUNDS 99
 
@@ -185,17 +185,16 @@ public Action:Timer_ResetGhostCapper(Handle:timer)
 void CancelRound()
 {
 	PrintToChatAll("%s Round timed out. No team point awarded.", g_tag);
+	g_roundNumber--;
 	
-	new lastRound = g_roundNumber - 1;
-	
-	if (lastRound < 1)
+	if (g_roundNumber < 0)
 	{
-		LogError("Tried to revert to team scores from round %i. Reverted to round 1 scores instead.", lastRound);
-		lastRound = 1;
+		LogError("Tried to revert to team scores from round %i. Reverted to round 1 scores instead.", g_roundNumber);
+		g_roundNumber = 0;
 	}
 	
-	SetTeamScore(TEAM_JINRAI, g_teamScore[TEAM_JINRAI][lastRound]);
-	SetTeamScore(TEAM_NSF, g_teamScore[TEAM_NSF][lastRound]);
+	SetTeamScore(TEAM_JINRAI, g_teamScore[TEAM_JINRAI][g_roundNumber]);
+	SetTeamScore(TEAM_NSF, g_teamScore[TEAM_NSF][g_roundNumber]);
 }
 
 public Action:Timer_CheckWinCondition(Handle:timer)
