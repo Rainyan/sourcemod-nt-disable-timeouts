@@ -290,10 +290,10 @@ public Action:Timer_MapChange(Handle:timer)
 
 void CheckGhostcapPluginCompatibility()
 {
-	new Handle:g_hGhostcapVersion = FindConVar("sm_ntghostcap_version");
+	new Handle:hGhostcapVersion = FindConVar("sm_ntghostcap_version");
 	new String:g_ghostcapUrl[] = "https://github.com/softashell/nt-sourcemod-plugins";
 	
 	// Look for ghost cap plugin's version variable
-	if (g_hGhostcapVersion == null)
+	if (hGhostcapVersion == null)
 		SetFailState("This plugin requires Soft as HELL's Ghost cap plugin version 1.5.4 or newer: %s", g_ghostcapUrl);
 }
