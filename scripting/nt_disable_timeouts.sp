@@ -57,12 +57,7 @@ public OnPluginStart()
 
 public OnAllPluginsLoaded()
 {
-	new Handle:g_hGhostcapVersion = FindConVar("sm_ntghostcap_version");
-	new String:g_ghostcapUrl[] = "https://github.com/softashell/nt-sourcemod-plugins";
-	
-	// Look for ghost cap plugin's version variable
-	if (g_hGhostcapVersion == null)
-		SetFailState("This plugin requires Soft as HELL's Ghost cap plugin version 1.5.4 or newer: %s", g_ghostcapUrl);
+	CheckGhostcapPluginCompatibility();
 }
 
 public OnConfigsExecuted()
@@ -292,4 +287,14 @@ public Action:Timer_MapChange(Handle:timer)
 	}
 	
 	ServerCommand("changelevel %s", nextMap);
+}
+
+void CheckGhostcapPluginCompatibility()
+{
+	new Handle:g_hGhostcapVersion = FindConVar("sm_ntghostcap_version");
+	new String:g_ghostcapUrl[] = "https://github.com/softashell/nt-sourcemod-plugins";
+	
+	// Look for ghost cap plugin's version variable
+	if (g_hGhostcapVersion == null)
+		SetFailState("This plugin requires Soft as HELL's Ghost cap plugin version 1.5.4 or newer: %s", g_ghostcapUrl);
 }
