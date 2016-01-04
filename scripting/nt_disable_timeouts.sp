@@ -57,7 +57,7 @@ public OnPluginStart()
 
 public OnAllPluginsLoaded()
 {
-	new Handle:g_hGhostcapVersion = FindConVar("m_ntghostcap_version");
+	new Handle:g_hGhostcapVersion = FindConVar("sm_ntghostcap_version");
 	new String:g_ghostcapUrl[] = "https://github.com/softashell/nt-sourcemod-plugins";
 	
 	// Look for ghost cap plugin's version variable
