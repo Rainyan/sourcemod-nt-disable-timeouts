@@ -8,4 +8,4 @@ Compile dependencies:
   - <a target="_blank" href="https://github.com/softashell/sourcemod-nt-include">SourceMod NT include</a>
 
 Required server plugins:
-  - <a target="_blank" href="https://github.com/softashell/nt-sourcemod-plugins">Ghostcap event</a>, version 1.5.1 or newer
+  - <a target="_blank" href="https://github.com/softashell/nt-sourcemod-plugins">Ghostcap event</a>, version 1.5.4 or newer
