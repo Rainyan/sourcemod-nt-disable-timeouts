@@ -189,7 +189,7 @@ void CancelRound()
 	
 	if (g_roundNumber < 0)
 	{
-		LogError("Tried to revert to team scores from round %i. Reverted to round 1 scores instead.", g_roundNumber);
+		LogError("Tried to revert to team scores from round %i. Reverted to 0th (first) round scores instead.", g_roundNumber);
 		g_roundNumber = 0;
 	}
 	
