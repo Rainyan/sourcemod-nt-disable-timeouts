@@ -4,7 +4,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.4.2"
+#define PLUGIN_VERSION "0.1.4.3"
 
 #define MAX_ROUNDS 99
 
@@ -57,37 +57,12 @@ public OnPluginStart()
 
 public OnAllPluginsLoaded()
 {
-	new Handle:g_hGhostcapVersion = FindConVar("sm_ntghostcapevent_version");
-	new String:g_ghostcapUrl[] = "https://github.com/softashell/nt-sourcemod-plugins/blob/master/scripting/nt_ghostcap.sp";
+	new Handle:g_hGhostcapVersion = FindConVar("m_ntghostcap_version");
+	new String:g_ghostcapUrl[] = "https://github.com/softashell/nt-sourcemod-plugins";
 	
 	// Look for ghost cap plugin's version variable
 	if (g_hGhostcapVersion == null)
-		SetFailState("This plugin requires Soft as HELL's Ghost cap plugin: %s", g_ghostcapUrl);
-	
-	// Get the ghost cap plugin version
-	decl String:ghostcapVersion[16];
-	GetConVarString( g_hGhostcapVersion, ghostcapVersion, sizeof(ghostcapVersion) );
-	CloseHandle(g_hGhostcapVersion);
-	
-	decl String:ghostcapVersion_Numeric[16];
-	new stringpos;
-	
-	for (new i = 0; i < strlen(ghostcapVersion); i++)
-	{
-		if ( IsCharNumeric(ghostcapVersion[i]) )
-			ghostcapVersion_Numeric[stringpos++] = ghostcapVersion[i];
-	}
-	ghostcapVersion_Numeric[stringpos] = 0; // string terminator
-	
-	if (
-			(strlen(ghostcapVersion_Numeric) >= 3 && StringToInt(ghostcapVersion_Numeric) < 151)	|| // 3+ digit version numbers
-			(strlen(ghostcapVersion_Numeric) == 2 && StringToInt(ghostcapVersion_Numeric) < 16)		|| // 2 digit version numbers
-			(strlen(ghostcapVersion_Numeric) == 1 && StringToInt(ghostcapVersion_Numeric) < 2)		|| // 1 digit version numbers
-			(strlen(ghostcapVersion_Numeric) < 1) // version string has no numbers, treat as error
-		)
-		{
-			SetFailState("This plugin requires Soft as HELL's Ghost cap plugin to be running version 1.5.1 or higher: %s", g_ghostcapUrl);
-		}
+		SetFailState("This plugin requires Soft as HELL's Ghost cap plugin version 1.5.4 or newer: %s", g_ghostcapUrl);
 }
 
 public OnConfigsExecuted()
