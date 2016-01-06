@@ -4,7 +4,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.4.4"
+#define PLUGIN_VERSION "0.1.4.5"
 
 #define MAX_ROUNDS 99
 
@@ -160,21 +160,27 @@ public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroa
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	
+	if ( DidPlayerReallySpawn(client) )
+		playerSurvivedRound[client] = true;
+}
+
+bool DidPlayerReallySpawn(client)
+{
 	if ( !Client_IsValid(client) || !IsClientInGame(client) )
-		return Plugin_Handled;
+		return false;
 	
 	new team = GetClientTeam(client);
 	if (team != TEAM_JINRAI && team != TEAM_NSF)
-		return Plugin_Handled;
+		return false;
 	
-	// Round started already, client cannot spawn as a living player
+	if ( !IsPlayerAlive(client) )
+		return false;
+	
 	new Float:currentTime = GetGameTime();
-	if (currentTime - g_fRoundTime > 15 + 1) // Freezetime is 15 secs, but the timer isn't 100% accurate. Added one second for safety.
-		return Plugin_Handled;
+	if (currentTime - g_fRoundTime > 15 + 1) // Spawn event triggered after round spawning is finished. Player cannot have spawned.
+		return false;
 	
-	playerSurvivedRound[client] = true;
-	
-	return Plugin_Handled;
+	return true;
 }
 
 public Action:Timer_ResetGhostCapper(Handle:timer)
