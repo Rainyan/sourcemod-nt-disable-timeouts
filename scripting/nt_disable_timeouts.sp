@@ -80,6 +80,14 @@ public OnMapStart()
 	g_roundNumber = GetTeamScore(TEAM_JINRAI) + GetTeamScore(TEAM_NSF);
 }
 
+public OnMapEnd()
+{
+	for (new i = 0; i <= MaxClients; i++)
+	{
+		playerSurvivedRound[i] = false;
+	}
+}
+
 public OnClientDisconnect(client)
 {
 	playerSurvivedRound[client] = false; // Snake? SNAAKE
