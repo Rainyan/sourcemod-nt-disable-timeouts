@@ -5,6 +5,7 @@
 #include <neotokyo>
 
 #define PLUGIN_VERSION "0.1.4.5"
+#define DEBUG 1
 
 #define MAX_ROUNDS 99
 
@@ -25,6 +26,10 @@ new bool:playerSurvivedRound[MAXPLAYERS+1];
 new Float:g_fRoundTime;
 
 new String:g_tag[] = "[TIMEOUT]";
+
+#if DEBUG
+new String:g_path_logDebug[] = "logs/timeouts";
+#endif
 
 public Plugin:myinfo = {
 	name			= "NT Disable Timeouts",
@@ -53,6 +58,10 @@ public OnPluginStart()
 	HookConVarChange(g_hDesiredScoreLimit, Event_DesiredScoreLimit);
 	
 	CreateConVar("sm_timeouts_version", PLUGIN_VERSION, "NT Disable Timeouts plugin version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	
+#if DEBUG
+	PrepareDebugLogFolder();
+#endif
 }
 
 public OnAllPluginsLoaded()
@@ -137,6 +146,32 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 		// Teams didn't reach a traditional NT tie by numbers
 		if (survivors[TEAM_JINRAI] != survivors[TEAM_NSF])
 		{
+#if DEBUG
+				decl String:timeoutTitle[128];
+				FormatTime(timeoutTitle, sizeof(timeoutTitle), NULL_STRING);
+				StrCat(timeoutTitle, sizeof(timeoutTitle), " - Timeout triggered.");
+				LogDebug(timeoutTitle);
+				
+				decl String:scoreInfo[25];
+				Format( scoreInfo, sizeof(scoreInfo), "Jinrai %i -- NFS %i", GetTeamScore(TEAM_JINRAI), GetTeamScore(TEAM_NSF) );
+				LogDebug(scoreInfo);
+				
+				for (new i = 1; i <= MaxClients; i++)
+				{
+					decl String:clientName[MAX_NAME_LENGTH] = "<invalid client>";
+					if ( Client_IsValid(i) )
+					{
+						if ( IsFakeClient(i) )
+							strcopy(clientName, sizeof(clientName), "<bot client>");
+						else
+							GetClientName( i, clientName, sizeof(clientName) );
+					}
+					
+					LogDebug("Client %i - Survived = %b - Name: %s", i, playerSurvivedRound[i], clientName);
+				}
+				
+				LogDebug("");
+#endif
 			CancelRound(); // Cancel the team's round point gained
 		}
 	}
@@ -303,3 +338,28 @@ void CheckGhostcapPluginCompatibility()
 	if (hGhostcapVersion == null)
 		SetFailState("This plugin requires Soft as HELL's Ghost cap plugin version 1.5.4 or newer: %s", ghostcapUrl);
 }
+
+#if DEBUG
+void PrepareDebugLogFolder()
+{
+	decl String:path[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, path, sizeof(path), g_path_logDebug);
+	if ( !DirExists(path) )
+		CreateDirectory(path, 509);
+}
+
+void LogDebug(const String:message[], any ...)
+{
+	decl String:path[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, path, sizeof(path), g_path_logDebug);
+	StrCat(path, sizeof(path), "/timeouts_debug.log");
+	
+	// Format according to SM format rules
+	decl String:formatMsg[512];
+	VFormat(formatMsg, sizeof(formatMsg), message, 2);
+	
+	new Handle:file = OpenFile(path, "a"); // fopen
+	WriteFileLine(file, formatMsg);
+	CloseHandle(file);
+}
+#endif
