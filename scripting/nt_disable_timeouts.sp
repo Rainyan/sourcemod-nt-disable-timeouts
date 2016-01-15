@@ -222,9 +222,6 @@ bool DidPlayerReallySpawn(client)
 	if (team != TEAM_JINRAI && team != TEAM_NSF)
 		return false;
 	
-	if ( !IsPlayerAlive(client) )
-		return false;
-	
 	new Float:currentTime = GetGameTime();
 	if (currentTime - g_fRoundTime > 30 + 1) // Spawn event triggered after round spawning is finished. Player cannot have spawned.
 		return false;
