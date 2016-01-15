@@ -4,7 +4,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.4.6"
+#define PLUGIN_VERSION "0.1.4.7"
 #define DEBUG 1
 
 #define MAX_ROUNDS 99
@@ -29,7 +29,7 @@ new String:g_tag[] = "[TIMEOUT]";
 
 #if DEBUG
 new String:g_path_logDebug[] = "logs/timeouts";
-new String:g_teamName[] = {
+new String:g_teamName[][] = {
 	"Unassigned",
 	"Spectator",
 	"Jinrai",
@@ -83,7 +83,7 @@ public OnConfigsExecuted()
 
 public OnMapStart()
 {
-	g_roundNumber = GetTeamScore(TEAM_JINRAI) + GetTeamScore(TEAM_NSF);
+	g_roundNumber = 0;
 }
 
 public OnMapEnd()
@@ -173,7 +173,7 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 				for (new i = 1; i <= MaxClients; i++)
 				{
 					decl String:clientName[MAX_NAME_LENGTH] = "<invalid client>";
-					if ( Client_IsValid(i) )
+					if ( Client_IsValid(i) && IsClientInGame(i) )
 					{
 						if ( IsFakeClient(i) )
 							strcopy(clientName, sizeof(clientName), "<bot client>");
