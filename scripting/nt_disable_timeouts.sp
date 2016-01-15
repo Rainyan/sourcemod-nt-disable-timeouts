@@ -4,7 +4,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.4.5"
+#define PLUGIN_VERSION "0.1.4.6"
 #define DEBUG 1
 
 #define MAX_ROUNDS 99
@@ -29,6 +29,12 @@ new String:g_tag[] = "[TIMEOUT]";
 
 #if DEBUG
 new String:g_path_logDebug[] = "logs/timeouts";
+new String:g_teamName[] = {
+	"Unassigned",
+	"Spectator",
+	"Jinrai",
+	"NSF"
+};
 #endif
 
 public Plugin:myinfo = {
@@ -175,7 +181,7 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 							GetClientName( i, clientName, sizeof(clientName) );
 					}
 					
-					LogDebug("Client %i - Survived = %b - Name: %s", i, playerSurvivedRound[i], clientName);
+					LogDebug("Client %i (%s) - Survived = %b - Name: %s", i, g_teamName[GetClientTeam(i)], playerSurvivedRound[i], clientName);
 				}
 				
 				LogDebug("");
@@ -220,7 +226,7 @@ bool DidPlayerReallySpawn(client)
 		return false;
 	
 	new Float:currentTime = GetGameTime();
-	if (currentTime - g_fRoundTime > 15 + 1) // Spawn event triggered after round spawning is finished. Player cannot have spawned.
+	if (currentTime - g_fRoundTime > 30 + 1) // Spawn event triggered after round spawning is finished. Player cannot have spawned.
 		return false;
 	
 	return true;
