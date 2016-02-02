@@ -4,7 +4,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.4.7"
+#define PLUGIN_VERSION "0.1.4.8"
 #define DEBUG 1
 
 #define MAX_ROUNDS 99
