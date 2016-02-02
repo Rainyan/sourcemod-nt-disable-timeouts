@@ -21,7 +21,7 @@ new g_roundNumber;
 new g_ghostCappingTeam;
 new g_teamScore[4][MAX_ROUNDS]; // unassigned, spec, jinrai, nsf
 
-new bool:playerSurvivedRound[MAXPLAYERS+1];
+new bool:g_playerSurvivedRound[MAXPLAYERS+1];
 
 new Float:g_fRoundTime;
 
@@ -90,13 +90,8 @@ public OnMapEnd()
 {
 	for (new i = 0; i <= MaxClients; i++)
 	{
-		playerSurvivedRound[i] = false;
+		g_playerSurvivedRound[i] = false;
 	}
-}
-
-public OnClientDisconnect(client)
-{
-	playerSurvivedRound[client] = false; // Snake? SNAAKE
 }
 
 public OnGhostCapture(client)
@@ -144,7 +139,7 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 		if ( !Client_IsValid(i) )
 			continue;
 		
-		if (!playerSurvivedRound[i])
+		if (!g_playerSurvivedRound[i])
 			continue;
 		
 		new team = GetClientTeam(i);
@@ -181,7 +176,7 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 							GetClientName( i, clientName, sizeof(clientName) );
 					}
 					
-					LogDebug("Client %i (%s) - Survived = %b - Name: %s", i, g_teamName[GetClientTeam(i)], playerSurvivedRound[i], clientName);
+					LogDebug("Client %i (%s) - Survived = %b - Name: %s", i, g_teamName[GetClientTeam(i)], g_playerSurvivedRound[i], clientName);
 				}
 				
 				LogDebug("");
@@ -189,6 +184,8 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 			CancelRound(); // Cancel the team's round point gained
 		}
 	}
+	
+	ResetLivingState();
 	
 	return Plugin_Handled;
 }
@@ -201,7 +198,7 @@ public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroa
 	if (deathTime < roundMaxLength)
 	{
 		new victim = GetClientOfUserId(GetEventInt(event, "userid"));
-		playerSurvivedRound[victim] = false;
+		g_playerSurvivedRound[victim] = false;
 	}
 }
 
@@ -210,7 +207,7 @@ public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroa
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	
 	if ( DidPlayerReallySpawn(client) )
-		playerSurvivedRound[client] = true;
+		g_playerSurvivedRound[client] = true;
 }
 
 bool DidPlayerReallySpawn(client)
@@ -224,7 +221,10 @@ bool DidPlayerReallySpawn(client)
 	
 	new Float:currentTime = GetGameTime();
 	if (currentTime - g_fRoundTime > 30 + 1) // Spawn event triggered after round spawning is finished. Player cannot have spawned.
+	{
+		PrintToServer("Spawn time > 30+1. currentTime = %f. currentTime-roundTime = %f", currentTime, currentTime - g_fRoundTime);
 		return false;
+	}
 	
 	return true;
 }
@@ -378,3 +378,11 @@ void LogDebug(const String:message[], any ...)
 	CloseHandle(file);
 }
 #endif
+
+void ResetLivingState()
+{
+	for (new i = 1; i <= MaxClients; i++)
+	{
+		g_playerSurvivedRound[i] = false;
+	}
+}
