@@ -86,14 +86,6 @@ public OnMapStart()
 	g_roundNumber = 0;
 }
 
-public OnMapEnd()
-{
-	for (new i = 0; i <= MaxClients; i++)
-	{
-		g_playerSurvivedRound[i] = false;
-	}
-}
-
 public OnGhostCapture(client)
 {
 	if ( !Client_IsValid(client) )
