@@ -124,57 +124,54 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 		return Plugin_Continue;
 	
 	new survivors[4]; // unassigned, spec, jinrai, nsf
+	new team;
 	
 	// Check survivor count on both teams
 	for (new i = 1; i <= MaxClients; i++)
 	{
-		if ( !Client_IsValid(i) )
+		if ( !Client_IsValid(i) || !IsClientInGame(i) )
 			continue;
 		
 		if (!g_playerSurvivedRound[i])
 			continue;
 		
-		new team = GetClientTeam(i);
+		team = GetClientTeam(i);
 		if (team != TEAM_JINRAI && team != TEAM_NSF)
 			continue;
 		
 		survivors[team]++;
 	}
 	
-	// Both teams had players remaining after the timeout
-	if (survivors[TEAM_JINRAI] > 0 && survivors[TEAM_NSF] > 0)
-	{
 		// Teams didn't reach a traditional NT tie by numbers
-		if (survivors[TEAM_JINRAI] != survivors[TEAM_NSF])
-		{
+	if (survivors[TEAM_JINRAI] != survivors[TEAM_NSF])
+	{
 #if DEBUG
-				decl String:timeoutTitle[128];
-				FormatTime(timeoutTitle, sizeof(timeoutTitle), NULL_STRING);
-				StrCat(timeoutTitle, sizeof(timeoutTitle), " - Timeout triggered.");
-				LogDebug(timeoutTitle);
-				
-				decl String:scoreInfo[25];
-				Format( scoreInfo, sizeof(scoreInfo), "Jinrai %i -- NFS %i", GetTeamScore(TEAM_JINRAI), GetTeamScore(TEAM_NSF) );
-				LogDebug(scoreInfo);
-				
-				for (new i = 1; i <= MaxClients; i++)
-				{
-					decl String:clientName[MAX_NAME_LENGTH] = "<invalid client>";
-					if ( Client_IsValid(i) && IsClientInGame(i) )
-					{
-						if ( IsFakeClient(i) )
-							strcopy(clientName, sizeof(clientName), "<bot client>");
-						else
-							GetClientName( i, clientName, sizeof(clientName) );
-					}
-					
-					LogDebug("Client %i (%s) - Survived = %b - Name: %s", i, g_teamName[GetClientTeam(i)], g_playerSurvivedRound[i], clientName);
-				}
-				
-				LogDebug("");
-#endif
-			CancelRound(); // Cancel the team's round point gained
+		decl String:timeoutTitle[128];
+		FormatTime(timeoutTitle, sizeof(timeoutTitle), NULL_STRING);
+		StrCat(timeoutTitle, sizeof(timeoutTitle), " - Timeout triggered.");
+		LogDebug(timeoutTitle);
+		
+		decl String:scoreInfo[25];
+		Format( scoreInfo, sizeof(scoreInfo), "Jinrai %i -- NFS %i", GetTeamScore(TEAM_JINRAI), GetTeamScore(TEAM_NSF) );
+		LogDebug(scoreInfo);
+		
+		for (new i = 1; i <= MaxClients; i++)
+		{
+			decl String:clientName[MAX_NAME_LENGTH] = "<invalid client>";
+			if ( Client_IsValid(i) && IsClientInGame(i) )
+			{
+				if ( IsFakeClient(i) )
+					strcopy(clientName, sizeof(clientName), "<bot client>");
+				else
+					GetClientName( i, clientName, sizeof(clientName) );
+			}
+			
+			LogDebug("Client %i (%s) - Survived = %b - Name: %s", i, g_teamName[GetClientTeam(i)], g_playerSurvivedRound[i], clientName);
 		}
+		
+		LogDebug("");
+#endif
+		CancelRound(); // Cancel teams' round point gained
 	}
 	
 	ResetLivingState();
@@ -223,7 +220,7 @@ bool DidPlayerReallySpawn(client)
 
 public Action:Timer_ResetGhostCapper(Handle:timer)
 {
-	g_ghostCappingTeam = TEAM_NONE; // Reset ghost cap var
+	g_ghostCappingTeam = TEAM_NONE;
 }
 
 void CancelRound()
