@@ -253,7 +253,7 @@ public Action:Timer_CheckWinCondition(Handle:timer)
 {	
 	if ( GetTeamScore(TEAM_JINRAI) >= GetConVarInt(g_hDesiredScoreLimit) )
 	{
-		PrintToChatAll( "%s Jinrai wins %i - %i", g_tag, g_teamScore[TEAM_JINRAI][g_roundNumber], g_teamScore[TEAM_NSF][g_roundNumber] );
+		PrintToChatAll( "[SM] Jinrai wins %i - %i", g_teamScore[TEAM_JINRAI][g_roundNumber], g_teamScore[TEAM_NSF][g_roundNumber] );
 		
 		decl String:nextMap[128];
 		GetConVarString( g_hNextMap, nextMap, sizeof(nextMap) );
@@ -264,7 +264,7 @@ public Action:Timer_CheckWinCondition(Handle:timer)
 	
 	else if ( GetTeamScore(TEAM_NSF) >= GetConVarInt(g_hDesiredScoreLimit) )
 	{
-		PrintToChatAll( "%s NSF wins %i - %i", g_tag, g_teamScore[TEAM_NSF][g_roundNumber], g_teamScore[TEAM_JINRAI][g_roundNumber] );
+		PrintToChatAll( "[SM] NSF wins %i - %i", g_teamScore[TEAM_NSF][g_roundNumber], g_teamScore[TEAM_JINRAI][g_roundNumber] );
 		
 		decl String:nextMap[128];
 		GetConVarString( g_hNextMap, nextMap, sizeof(nextMap) );
@@ -343,11 +343,15 @@ public Action:Timer_MapChange(Handle:timer)
 void CheckGhostcapPluginCompatibility()
 {
 	new Handle:hGhostcapVersion = FindConVar("sm_ntghostcap_version");
-	new String:ghostcapUrl[] = "https://github.com/softashell/nt-sourcemod-plugins";
 	
 	// Look for ghost cap plugin's version variable
 	if (hGhostcapVersion == null)
+	{
+		new String:ghostcapUrl[] = "https://github.com/softashell/nt-sourcemod-plugins";
 		SetFailState("This plugin requires Soft as HELL's Ghost cap plugin version 1.5.4 or newer: %s", ghostcapUrl);
+	}
+	
+	CloseHandle(hGhostcapVersion);
 }
 
 #if DEBUG
