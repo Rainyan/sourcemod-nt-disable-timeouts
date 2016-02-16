@@ -4,7 +4,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.4.8"
+#define PLUGIN_VERSION "0.1.4.9"
 #define DEBUG 1
 
 #define MAX_ROUNDS 99
@@ -22,6 +22,7 @@ new g_ghostCappingTeam;
 new g_teamScore[4][MAX_ROUNDS]; // unassigned, spec, jinrai, nsf
 
 new bool:g_playerSurvivedRound[MAXPLAYERS+1];
+new bool:g_isSpawned[MAXPLAYERS+1];
 
 new Float:g_fRoundTime;
 
@@ -132,18 +133,16 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 		if ( !Client_IsValid(i) || !IsClientInGame(i) )
 			continue;
 		
-		if (!g_playerSurvivedRound[i])
-			continue;
-		
 		team = GetClientTeam(i);
 		if (team != TEAM_JINRAI && team != TEAM_NSF)
 			continue;
 		
-		survivors[team]++;
+		if (g_playerSurvivedRound[i])
+			survivors[team]++;
 	}
 	
-		// Teams didn't reach a traditional NT tie by numbers
-	if (survivors[TEAM_JINRAI] != survivors[TEAM_NSF])
+	// Teams didn't reach a traditional NT tie by numbers
+	if (survivors[TEAM_JINRAI] > 0 && survivors[TEAM_NSF] > 0)
 	{
 #if DEBUG
 		decl String:timeoutTitle[128];
@@ -164,9 +163,9 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 					strcopy(clientName, sizeof(clientName), "<bot client>");
 				else
 					GetClientName( i, clientName, sizeof(clientName) );
+				
+				LogDebug("Client %i (%s) - Survived = %b - Name: %s", i, g_teamName[GetClientTeam(i)], g_playerSurvivedRound[i], clientName);
 			}
-			
-			LogDebug("Client %i (%s) - Survived = %b - Name: %s", i, g_teamName[GetClientTeam(i)], g_playerSurvivedRound[i], clientName);
 		}
 		
 		LogDebug("");
@@ -181,14 +180,13 @@ public Action:Event_RoundStart(Handle:event, const String:name[], bool:dontBroad
 
 public Action:Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	new Float:roundMaxLength = GetConVarFloat(g_hRoundTime) * 60;
-	new Float:deathTime = GetGameTime() - g_fRoundTime;
+	new victim = GetClientOfUserId(GetEventInt(event, "userid"));
 	
-	if (deathTime < roundMaxLength)
-	{
-		new victim = GetClientOfUserId(GetEventInt(event, "userid"));
+	new Float:roundTimeSecs = GetConVarFloat(g_hRoundTime) * 60;
+	new Float:currentTime = GetGameTime();
+	
+	if (currentTime - g_fRoundTime < roundTimeSecs)
 		g_playerSurvivedRound[victim] = false;
-	}
 }
 
 public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
@@ -196,7 +194,10 @@ public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroa
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	
 	if ( DidPlayerReallySpawn(client) )
+	{
+		g_isSpawned[client] = true;
 		g_playerSurvivedRound[client] = true;
+	}
 }
 
 bool DidPlayerReallySpawn(client)
@@ -372,6 +373,7 @@ void ResetLivingState()
 {
 	for (new i = 1; i <= MaxClients; i++)
 	{
+		g_isSpawned[i] = false;
 		g_playerSurvivedRound[i] = false;
 	}
 }
