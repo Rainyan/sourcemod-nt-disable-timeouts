@@ -4,7 +4,7 @@
 #include <smlib>
 #include <neotokyo>
 
-#define PLUGIN_VERSION "0.1.4.9"
+#define PLUGIN_VERSION "0.1.4.10"
 #define DEBUG 1
 
 #define MAX_ROUNDS 99
@@ -84,6 +84,7 @@ public OnConfigsExecuted()
 
 public OnMapStart()
 {
+	ResetLivingState();
 	g_roundNumber = 0;
 }
 
@@ -296,6 +297,7 @@ public Event_NeoRestartThis(Handle:cvar, const String:oldVal[], const String:new
 	{
 		g_ghostCappingTeam = TEAM_NONE;
 		g_roundNumber = 0;
+		ResetLivingState();
 	}
 }
 
